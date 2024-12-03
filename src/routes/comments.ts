@@ -1,6 +1,8 @@
 import { Router, Request, Response, NextFunction } from "express"
 import prisma from "../../prisma/index"
 
+import { verifyToken, checkCommentsPermission } from "../middlewares/auth"
+
 const router = Router()
 
 router.get("/:postId", async (req: Request, res: Response, next: NextFunction) => {
@@ -11,6 +13,7 @@ router.get("/:postId", async (req: Request, res: Response, next: NextFunction) =
                 postId: Number(postId),
             },
             select: {
+                id: true,
                 content: true,
                 author: {
                     select: {
@@ -29,10 +32,11 @@ router.get("/:postId", async (req: Request, res: Response, next: NextFunction) =
     }
 })
 
-router.post("/:postId/:authorId", async (req: Request, res: Response, next: NextFunction) => {
+router.post("/:postId", verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     try {
+        const { id: authorId } = req.user!
         const { content } = req.body
-        const { postId, authorId } = req.params
+        const { postId } = req.params
 
         if (!content) {
             throw new Error("댓글 내용을 입력해주세요")
@@ -55,42 +59,52 @@ router.post("/:postId/:authorId", async (req: Request, res: Response, next: Next
     }
 })
 
-router.patch("/:commentsId", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { content } = req.body
-        const { commentsId } = req.params
+router.patch(
+    "/:commentsId",
+    verifyToken,
+    checkCommentsPermission,
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { content } = req.body
+            const { commentsId } = req.params
 
-        if (!content) {
-            throw new Error("댓글 내용을 입력해주세요")
+            if (!content) {
+                throw new Error("댓글 내용을 입력해주세요")
+            }
+
+            const update = await prisma.comments.update({
+                where: {
+                    id: Number(commentsId),
+                },
+                data: {
+                    content,
+                },
+            })
+
+            res.json(update)
+        } catch (err) {
+            next(err)
         }
-
-        const update = await prisma.comments.update({
-            where: {
-                id: Number(commentsId),
-            },
-            data: {
-                content,
-            },
-        })
-
-        res.json(update)
-    } catch (err) {
-        next(err)
     }
-})
+)
 
-router.delete("/:commentsId", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { commentsId } = req.params
+router.delete(
+    "/:commentsId",
+    verifyToken,
+    checkCommentsPermission,
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { commentsId } = req.params
 
-        const deleteRow = await prisma.comments.delete({
-            where: { id: Number(commentsId) },
-        })
+            const deleteRow = await prisma.comments.delete({
+                where: { id: Number(commentsId) },
+            })
 
-        res.json(deleteRow)
-    } catch (err) {
-        next(err)
+            res.json(deleteRow)
+        } catch (err) {
+            next(err)
+        }
     }
-})
+)
 
 export default router

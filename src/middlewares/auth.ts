@@ -65,3 +65,28 @@ export const checkPostsPermission = async (req: Request, res: Response, next: Ne
         next(err)
     }
 }
+
+//댓글 액션 관련 회원 검증
+export const checkCommentsPermission = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { user } = req
+        console.log("🚀 ~ checkCommentsPermission ~ user:", user)
+        const { commentsId } = req.params
+
+        const checkPostId = await prisma.comments.findUnique({
+            where: {
+                id: Number(commentsId),
+                author: {
+                    id: user?.id,
+                },
+            },
+        })
+
+        if (!checkPostId) {
+            throw new Error("Permission denied")
+        }
+        next()
+    } catch (err) {
+        next(err)
+    }
+}
