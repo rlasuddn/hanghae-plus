@@ -1,6 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express"
 import prisma from "../../prisma/index"
-import { verifyToken, checkPostsPermission } from "../middlewares/auth"
+import { verifyToken, checkPostPermission } from "../middlewares/auth"
 
 const router = Router()
 
@@ -76,7 +76,7 @@ router.get("/:postId", async (req: Request, res: Response, next: NextFunction) =
 router.patch(
     "/:postId",
     verifyToken,
-    checkPostsPermission,
+    checkPostPermission,
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { postId } = req.params
@@ -102,7 +102,7 @@ router.patch(
 router.delete(
     "/:postId",
     verifyToken,
-    checkPostsPermission,
+    checkPostPermission,
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { postId } = req.params

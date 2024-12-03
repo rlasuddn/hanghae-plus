@@ -43,7 +43,7 @@ export const verifyToken = async (req: Request, res: Response, next: NextFunctio
 }
 
 //게시물 액션 관련 회원 검증
-export const checkPostsPermission = async (req: Request, res: Response, next: NextFunction) => {
+export const checkPostPermission = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { user } = req
         const { postId } = req.params
@@ -67,15 +67,14 @@ export const checkPostsPermission = async (req: Request, res: Response, next: Ne
 }
 
 //댓글 액션 관련 회원 검증
-export const checkCommentsPermission = async (req: Request, res: Response, next: NextFunction) => {
+export const checkCommentPermission = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { user } = req
-        console.log("🚀 ~ checkCommentsPermission ~ user:", user)
-        const { commentsId } = req.params
+        const { commentId } = req.params
 
-        const checkPostId = await prisma.comments.findUnique({
+        const checkPostId = await prisma.comment.findUnique({
             where: {
-                id: Number(commentsId),
+                id: Number(commentId),
                 author: {
                     id: user?.id,
                 },

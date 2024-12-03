@@ -1,14 +1,14 @@
 import { Router, Request, Response, NextFunction } from "express"
 import prisma from "../../prisma/index"
 
-import { verifyToken, checkCommentsPermission } from "../middlewares/auth"
+import { verifyToken, checkCommentPermission } from "../middlewares/auth"
 
 const router = Router()
 
 router.get("/:postId", async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { postId } = req.params
-        const comments = await prisma.comments.findMany({
+        const comment = await prisma.comment.findMany({
             where: {
                 postId: Number(postId),
             },
@@ -26,7 +26,7 @@ router.get("/:postId", async (req: Request, res: Response, next: NextFunction) =
                 createdAt: "desc",
             },
         })
-        res.json(comments)
+        res.json(comment)
     } catch (err) {
         next(err)
     }
@@ -42,7 +42,7 @@ router.post("/:postId", verifyToken, async (req: Request, res: Response, next: N
             throw new Error("댓글 내용을 입력해주세요")
         }
 
-        const create = await prisma.comments.create({
+        const create = await prisma.comment.create({
             data: {
                 content,
                 author: {
@@ -60,21 +60,21 @@ router.post("/:postId", verifyToken, async (req: Request, res: Response, next: N
 })
 
 router.patch(
-    "/:commentsId",
+    "/:commentId",
     verifyToken,
-    checkCommentsPermission,
+    checkCommentPermission,
     async (req: Request, res: Response, next: NextFunction) => {
         try {
             const { content } = req.body
-            const { commentsId } = req.params
+            const { commentId } = req.params
 
             if (!content) {
                 throw new Error("댓글 내용을 입력해주세요")
             }
 
-            const update = await prisma.comments.update({
+            const update = await prisma.comment.update({
                 where: {
-                    id: Number(commentsId),
+                    id: Number(commentId),
                 },
                 data: {
                     content,
@@ -89,15 +89,15 @@ router.patch(
 )
 
 router.delete(
-    "/:commentsId",
+    "/:commentId",
     verifyToken,
-    checkCommentsPermission,
+    checkCommentPermission,
     async (req: Request, res: Response, next: NextFunction) => {
         try {
-            const { commentsId } = req.params
+            const { commentId } = req.params
 
-            const deleteRow = await prisma.comments.delete({
-                where: { id: Number(commentsId) },
+            const deleteRow = await prisma.comment.delete({
+                where: { id: Number(commentId) },
             })
 
             res.json(deleteRow)
