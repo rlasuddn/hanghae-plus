@@ -1,5 +1,6 @@
 import { Router, Request, Response, NextFunction } from "express"
 import prisma from "../../prisma/index"
+import { verifyToken, checkPostsPermission } from "../middlewares/auth"
 
 const router = Router()
 
@@ -24,20 +25,22 @@ router.get("/", async (req: Request, res: Response) => {
     res.json(posts)
 })
 
-router.post("/", async (req: Request, res: Response, next: NextFunction) => {
+router.post("/", verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const { userId: authorId, title, content, password } = req.body
+        const { id: userId } = req.user!
+
+        const { title, content, password } = req.body
+
         const create = await prisma.post.create({
             data: {
                 title,
                 content,
                 password,
                 author: {
-                    connect: { id: authorId },
+                    connect: { id: userId },
                 },
             },
         })
-        console.log("🚀 ~ router.post ~ create:", create)
         res.json(create)
     } catch (err) {
         next(err)
@@ -70,43 +73,53 @@ router.get("/:postId", async (req: Request, res: Response, next: NextFunction) =
     }
 })
 
-router.patch("/:postId", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { postId } = req.params
-        const { password, content } = req.body
+router.patch(
+    "/:postId",
+    verifyToken,
+    checkPostsPermission,
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { postId } = req.params
+            const { password, content } = req.body
 
-        const update = await prisma.post.update({
-            where: {
-                id: Number(postId),
-                password,
-            },
-            data: {
-                content,
-            },
-        })
+            const update = await prisma.post.update({
+                where: {
+                    id: Number(postId),
+                    password,
+                },
+                data: {
+                    content,
+                },
+            })
 
-        res.json(update)
-    } catch (err) {
-        next(err)
+            res.json(update)
+        } catch (err) {
+            next(err)
+        }
     }
-})
+)
 
-router.delete("/:postId", async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const { postId } = req.params
-        const { password } = req.body
+router.delete(
+    "/:postId",
+    verifyToken,
+    checkPostsPermission,
+    async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            const { postId } = req.params
+            const { password } = req.body
 
-        const deleteRow = await prisma.post.delete({
-            where: {
-                id: Number(postId),
-                password,
-            },
-        })
+            const deleteRow = await prisma.post.delete({
+                where: {
+                    id: Number(postId),
+                    password,
+                },
+            })
 
-        res.json(deleteRow)
-    } catch (err) {
-        next(err)
+            res.json(deleteRow)
+        } catch (err) {
+            next(err)
+        }
     }
-})
+)
 
 export default router

@@ -2,10 +2,9 @@ import dotenv from "dotenv"
 dotenv.config()
 
 import express, { Request, Response, ErrorRequestHandler } from "express"
+import cookieParser from "cookie-parser"
 
 import apiRouters from "./routes/index"
-
-import cookieParser from "cookie-parser"
 
 const app = express()
 const port = process.env.PORT || 3001

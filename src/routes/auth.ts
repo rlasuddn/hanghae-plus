@@ -28,13 +28,20 @@ router.post("/join", async (req: Request, res: Response, next: NextFunction) => 
 
         joinSchema.parse({ nickname, password, passwordCheck })
 
-        const duplicateNickname = await prisma.user.findUnique({
+        const duplicateNicknameAndPassword = await prisma.user.findFirst({
             where: {
-                nickname,
+                OR: [
+                    {
+                        nickname,
+                    },
+                    {
+                        password,
+                    },
+                ],
             },
         })
 
-        if (duplicateNickname) {
+        if (duplicateNicknameAndPassword) {
             throw new Error("중복된 닉네임입니다.")
         }
 
@@ -79,18 +86,18 @@ router.post("/login", async (req: Request, res: Response, next: NextFunction) =>
             throw new Error("닉네임 또는 패스워드를 확인해주세요.")
         }
 
-        const token = jwt.sign({ id: findUser }, process.env.JWT_SECRET_KEY!, {
+        const token = jwt.sign(findUser, process.env.JWT_SECRET_KEY!, {
             expiresIn: "1d",
         })
 
-        res.cookie(`token${findUser.id}`, token, {
+        res.cookie(`token`, token, {
             expires: new Date(Date.now() + 900000),
             httpOnly: true,
             secure: true,
+            signed: true,
         })
         res.json({ findUser, token })
     } catch (err) {
-        console.log(err)
         next(err)
     }
 })
