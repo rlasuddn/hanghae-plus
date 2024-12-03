@@ -9,32 +9,4 @@ const prisma = globalForPrisma.prisma || new PrismaClient({ log: ["query"] })
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma
 
-/** FOR EXAMPLE */
-async function getUsers() {
-  const allUsers = await prisma.user.findMany()
-  console.dir(allUsers, { depth: null })
-}
-
-async function createUser() {
-  const create = await prisma.user.create({
-    data: {
-      name: "YoungWoo",
-    },
-  })
-  console.log("🚀 ~ main ~ create:", create)
-}
-
-async function modifyUser() {
-  const modify = await prisma.user.update({
-    where: { name: "YoungWoo" },
-    data: { joinState: false },
-  })
-  console.log("🚀 ~ modifyUser ~ modify:", modify)
-}
-
-async function main() {
-  const allUsers = await prisma.user.findMany()
-  console.log("🚀 ~ main ~ allUsers:", allUsers)
-}
-
 export default prisma

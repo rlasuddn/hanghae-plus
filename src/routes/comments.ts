@@ -14,7 +14,7 @@ router.get("/:postId", async (req: Request, res: Response, next: NextFunction) =
                 content: true,
                 author: {
                     select: {
-                        name: true,
+                        nickname: true,
                     },
                 },
             },

@@ -50,8 +50,9 @@ model Profile {
 model User {
   id        Int        @id @default(autoincrement())
   createdAt DateTime   @default(now())
-  name      String     @unique
+  nickname  String     @unique
   joinState Boolean    @default(true) @map("join_state")
+  password  String
   posts     Post[]
   comments  Comments[]
   profile   Profile?

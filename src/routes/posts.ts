@@ -15,7 +15,7 @@ router.get("/", async (req: Request, res: Response) => {
             content: true,
             author: {
                 select: {
-                    name: true,
+                    nickname: true,
                 },
             },
         },
@@ -59,7 +59,7 @@ router.get("/:postId", async (req: Request, res: Response, next: NextFunction) =
                 createdAt: true,
                 author: {
                     select: {
-                        name: true,
+                        nickname: true,
                     },
                 },
             },
